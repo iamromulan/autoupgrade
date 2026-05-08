@@ -1,0 +1,19 @@
+{
+	"luci-app-opkg-autoupgrade": {
+		"description": "Grant access to LuCI app opkg-autoupgrade",
+		"read": {
+			"uci": ["opkg-autoupgrade"],
+			"file": {
+				"/var/log/opkg-autoupgrade.log": ["read"],
+				"/usr/libexec/opkg-autoupgrade-list": ["exec"]
+			}
+		},
+		"write": {
+			"uci": ["opkg-autoupgrade"],
+			"file": {
+				"/usr/bin/opkg-autoupgrade-clearlog": ["exec"],
+				"/usr/bin/opkg-autoupgrade": ["exec"]
+			}
+		}
+	}
+}

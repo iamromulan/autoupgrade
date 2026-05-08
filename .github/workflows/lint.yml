@@ -1,0 +1,72 @@
+name: Lint
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+
+jobs:
+  shfmt:
+    name: Shell formatting (shfmt)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shfmt
+        run: |
+          SHFMT_VERSION="3.8.0"
+          wget -q "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" -O /usr/local/bin/shfmt
+          chmod +x /usr/local/bin/shfmt
+
+      - name: Check init scripts
+        run: |
+          fail=0
+          find . -name '*.init' -type f | while read -r f; do
+            echo "Checking $f"
+            cp "$f" "$f.orig"
+            shfmt -w -sr -s "$f"
+            if ! diff -q "$f.orig" "$f" > /dev/null 2>&1; then
+              echo "::error file=$f::Init script is not shfmt-formatted. Run: shfmt -w -sr -s $f"
+              diff -u "$f.orig" "$f" || true
+              fail=1
+            fi
+            mv "$f.orig" "$f"
+          done
+          exit $fail
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        run: |
+          fail=0
+          find . \( -name '*.sh' -o -name '*.init' \) -type f | while read -r f; do
+            echo "Checking $f"
+            if ! shellcheck -x -s sh -e SC1091,SC2034 "$f"; then
+              fail=1
+            fi
+          done
+          exit $fail
+
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ESLint
+        run: npm install -g eslint
+
+      - name: Lint JavaScript
+        run: |
+          find . -name '*.js' -path '*/resources/view/*' -type f | while read -r f; do
+            echo "Checking $f"
+            eslint "$f" || true
+          done

@@ -1,0 +1,92 @@
+name: Build and Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build (${{ matrix.version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: openwrt-23.05
+            format: ipk
+          - version: openwrt-24.10
+            format: ipk
+          - version: openwrt-25.12
+            format: apk
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare feed structure
+        run: |
+          mkdir -p feed/utils/opkg-autoupgrade
+          mkdir -p feed/applications/luci-app-opkg-autoupgrade
+          cp -r utils/opkg-autoupgrade/* feed/utils/opkg-autoupgrade/
+          cp -r applications/luci-app-opkg-autoupgrade/* feed/applications/luci-app-opkg-autoupgrade/
+
+      - name: Build opkg-autoupgrade
+        uses: openwrt/gh-action-sdk@v10
+        env:
+          ARCH: x86_64-${{ matrix.version }}
+          FEEDNAME: autoupgrade
+          PACKAGES: opkg-autoupgrade
+          FEED_DIR: ${{ github.workspace }}/feed
+          NO_SHFMT_CHECK: 1
+          NO_REFRESH_CHECK: 1
+          V: s
+
+      - name: Build luci-app-opkg-autoupgrade
+        uses: openwrt/gh-action-sdk@v10
+        env:
+          ARCH: x86_64-${{ matrix.version }}
+          FEEDNAME: autoupgrade
+          PACKAGES: luci-app-opkg-autoupgrade
+          FEED_DIR: ${{ github.workspace }}/feed
+          NO_SHFMT_CHECK: 1
+          NO_REFRESH_CHECK: 1
+          V: s
+
+      - name: Collect artifacts
+        run: |
+          mkdir -p output/${{ matrix.version }}
+          find bin/ -name '*.ipk' -exec cp {} output/${{ matrix.version }}/ \; 2>/dev/null || true
+          find bin/ -name '*.apk' -exec cp {} output/${{ matrix.version }}/ \; 2>/dev/null || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages-${{ matrix.version }}
+          path: output/${{ matrix.version }}/
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./artifacts/**/*.ipk
+            ./artifacts/**/*.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
