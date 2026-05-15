@@ -40,13 +40,10 @@ jobs:
         run: |
           mkdir -p feed
 
-          for version_dir in 23.05 24.10 25.12; do
+          for version_dir in 24.10 25.12; do
             mkdir -p "feed/${version_dir}"
           done
 
-          for f in site/*openwrt-23.05* site/*23.05*; do
-            [ -f "$f" ] && cp "$f" feed/23.05/ 2>/dev/null || true
-          done
           for f in site/*openwrt-24.10* site/*24.10*; do
             [ -f "$f" ] && cp "$f" feed/24.10/ 2>/dev/null || true
           done
@@ -55,7 +52,7 @@ jobs:
           done
 
           # Fallback: if version-specific naming didn't match, copy all
-          for dir in feed/23.05 feed/24.10 feed/25.12; do
+          for dir in feed/24.10 feed/25.12; do
             if [ -z "$(ls -A "$dir" 2>/dev/null)" ]; then
               cp site/*.ipk "$dir/" 2>/dev/null || true
               cp site/*.apk "$dir/" 2>/dev/null || true

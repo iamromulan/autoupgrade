@@ -16,8 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - version: openwrt-23.05
-            format: ipk
           - version: openwrt-24.10
             format: ipk
           - version: openwrt-25.12
