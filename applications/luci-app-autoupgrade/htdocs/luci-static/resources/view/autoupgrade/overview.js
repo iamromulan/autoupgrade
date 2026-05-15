@@ -145,8 +145,8 @@ function handleAddAuto(ev) {
 	if (!name || autoPackages[name])
 		return;
 
-	var sid = uci.add('opkg-autoupgrade', 'package');
-	uci.set('opkg-autoupgrade', sid, 'name', name);
+	var sid = uci.add('autoupgrade', 'package');
+	uci.set('autoupgrade', sid, 'name', name);
 
 	autoPackages[name] = '';
 	installedPackages.forEach(function(pkg) {
@@ -162,10 +162,10 @@ function handleRemoveAuto(ev) {
 	if (!name)
 		return;
 
-	var sections = uci.sections('opkg-autoupgrade', 'package');
+	var sections = uci.sections('autoupgrade', 'package');
 	for (var i = 0; i < sections.length; i++) {
 		if (sections[i].name === name) {
-			uci.remove('opkg-autoupgrade', sections[i]['.name']);
+			uci.remove('autoupgrade', sections[i]['.name']);
 			break;
 		}
 	}
@@ -186,10 +186,10 @@ function handleSettingSave() {
 		return;
 	}
 
-	uci.set('opkg-autoupgrade', 'settings', 'enabled', enabled.checked ? '1' : '0');
-	uci.set('opkg-autoupgrade', 'settings', 'interval', interval.value);
-	uci.set('opkg-autoupgrade', 'settings', 'time', time.value);
-	uci.set('opkg-autoupgrade', 'settings', 'retry_interval', retry.value);
+	uci.set('autoupgrade', 'settings', 'enabled', enabled.checked ? '1' : '0');
+	uci.set('autoupgrade', 'settings', 'interval', interval.value);
+	uci.set('autoupgrade', 'settings', 'time', time.value);
+	uci.set('autoupgrade', 'settings', 'retry_interval', retry.value);
 
 	uci.save().then(function() {
 		return uci.apply();
@@ -210,9 +210,9 @@ function handleRunNow() {
 					ui.showModal(_('Running...'), [
 						E('p', { 'class': 'spinning' }, _('Running upgrade check, please wait...'))
 					]);
-					fs.exec('/usr/bin/opkg-autoupgrade').then(function(res) {
+					fs.exec('/usr/bin/autoupgrade').then(function(res) {
 						ui.hideModal();
-						return fs.read('/var/log/opkg-autoupgrade.log').catch(function() { return ''; });
+						return fs.read('/var/log/autoupgrade.log').catch(function() { return ''; });
 					}).then(function(log) {
 						var logBox = document.getElementById('autoupgrade-logbox');
 						if (logBox) logBox.value = log || _('No log entries.');
@@ -230,9 +230,9 @@ function handleRunNow() {
 return view.extend({
 	load: function() {
 		return Promise.all([
-			uci.load('opkg-autoupgrade'),
-			fs.exec_direct('/usr/libexec/opkg-autoupgrade-list', []).catch(function() { return ''; }),
-			fs.read('/var/log/opkg-autoupgrade.log').catch(function() { return ''; })
+			uci.load('autoupgrade'),
+			fs.exec_direct('/usr/libexec/autoupgrade-list', []).catch(function() { return ''; }),
+			fs.read('/var/log/autoupgrade.log').catch(function() { return ''; })
 		]);
 	},
 
@@ -251,7 +251,7 @@ return view.extend({
 		installedPackages.sort(function(a, b) { return a.name.localeCompare(b.name); });
 
 		autoPackages = {};
-		var sections = uci.sections('opkg-autoupgrade', 'package');
+		var sections = uci.sections('autoupgrade', 'package');
 		sections.forEach(function(s) {
 			if (s.name) {
 				var ver = '';
@@ -262,10 +262,10 @@ return view.extend({
 			}
 		});
 
-		var enabled = uci.get('opkg-autoupgrade', 'settings', 'enabled') === '1';
-		var interval = uci.get('opkg-autoupgrade', 'settings', 'interval') || 'daily';
-		var time = uci.get('opkg-autoupgrade', 'settings', 'time') || '03:00';
-		var retryInterval = uci.get('opkg-autoupgrade', 'settings', 'retry_interval') || '30';
+		var enabled = uci.get('autoupgrade', 'settings', 'enabled') === '1';
+		var interval = uci.get('autoupgrade', 'settings', 'interval') || 'daily';
+		var time = uci.get('autoupgrade', 'settings', 'time') || '03:00';
+		var retryInterval = uci.get('autoupgrade', 'settings', 'retry_interval') || '30';
 
 		var view = E('div', {}, [
 			E('h2', {}, _('Auto Upgrade')),
@@ -370,7 +370,7 @@ return view.extend({
 					E('button', {
 						'class': 'btn cbi-button-neutral',
 						'click': function() {
-							fs.read('/var/log/opkg-autoupgrade.log').then(function(content) {
+							fs.read('/var/log/autoupgrade.log').then(function(content) {
 								var logBox = document.getElementById('autoupgrade-logbox');
 								if (logBox) logBox.value = content || _('No log entries.');
 							}).catch(function() {
@@ -384,7 +384,7 @@ return view.extend({
 						'class': 'btn cbi-button-negative',
 						'click': function() {
 							if (confirm(_('Clear the upgrade log?'))) {
-								fs.exec('/usr/bin/opkg-autoupgrade-clearlog').then(function() {
+								fs.exec('/usr/bin/autoupgrade-clearlog').then(function() {
 									var logBox = document.getElementById('autoupgrade-logbox');
 									if (logBox) logBox.value = '';
 								});

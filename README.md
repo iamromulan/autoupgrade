@@ -1,34 +1,37 @@
-# opkg-autoupgrade
+# autoupgrade
 
 > **Work in progress** — not yet ready for production use.
 
 Selective automatic package upgrades for OpenWrt. Choose which packages stay updated, on your schedule.
 
-Unlike a full `opkg upgrade` (which can break custom systems), this only upgrades the specific packages you configure. Each package is upgraded individually with full logging.
+Unlike a full `opkg upgrade` or `apk upgrade` (which can break custom systems), this only upgrades the specific packages you configure. Each package is upgraded individually with full logging.
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
-| `opkg-autoupgrade` | UCI config, procd init, upgrade script, cron scheduling |
-| `luci-app-opkg-autoupgrade` | LuCI web interface for managing auto-upgrades |
+| `autoupgrade` | UCI config, procd init, upgrade script, cron scheduling |
+| `luci-app-autoupgrade` | LuCI web interface for managing auto-upgrades |
 
 ## Features
 
 - **Selective upgrades** — only the packages you choose, not everything
 - **Scheduled** — daily, weekly, or monthly at a configurable time
-- **Dual package manager** — works with both opkg (19.07–24.10) and apk (25.x+)
-- **Full logging** — successes, warnings, and failures logged to syslog and `/var/log/opkg-autoupgrade.log`
+- **Dual package manager** — works with both opkg and apk (auto-detected at runtime)
+- **Full logging** — successes, warnings, and failures logged to syslog and `/var/log/autoupgrade.log`
 - **Retry on failure** — if feeds can't be reached (no internet), retries after a configurable interval
 - **LuCI integration** — browse installed packages, add them to the auto-upgrade list with one click
-- **UCI config** — all settings in `/etc/config/opkg-autoupgrade`, manageable via CLI or LuCI
+- **UCI config** — all settings in `/etc/config/autoupgrade`, manageable via CLI or LuCI
 - **Cron-based scheduling** — zero resource usage between runs; procd reload trigger keeps cron in sync with UCI
 
 ## Compatibility
 
-- **OpenWrt 19.07 through 25.x+**
-- opkg systems (19.07–24.10) and apk systems (25.x+) are both supported
-- LuCI app requires the modern JS framework (19.07+)
+| OpenWrt version | Package manager | Status |
+|-----------------|-----------------|--------|
+| 19.07 – 24.10   | opkg            | Supported |
+| 25.x+           | apk             | Supported |
+
+LuCI app requires the modern JS client-side rendering framework (19.07+).
 
 ## UCI Configuration
 
@@ -58,14 +61,14 @@ config package
 ## Repository Structure
 
 ```
-utils/opkg-autoupgrade/          # Base package
-applications/luci-app-opkg-autoupgrade/  # LuCI app
+utils/autoupgrade/                    # Base package
+applications/luci-app-autoupgrade/    # LuCI app
 ```
 
 This repo works as a standalone OpenWrt package feed. Add it to your build system:
 
 ```
-src-git autoupgrade https://github.com/iamromulan/opkg-autoupgrade.git
+src-git autoupgrade https://github.com/iamromulan/autoupgrade.git
 ```
 
 ## License

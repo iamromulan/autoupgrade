@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
-LUCI_TITLE:=LuCI support for opkg-autoupgrade
-LUCI_DEPENDS:=+luci-base +opkg-autoupgrade
+LUCI_TITLE:=LuCI support for autoupgrade
+LUCI_DEPENDS:=+luci-base +autoupgrade
 
 PKG_VERSION:=0.0.1
 PKG_RELEASE:=1

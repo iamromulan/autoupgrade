@@ -67,7 +67,7 @@ jobs:
             (cd "$dir" && ls -1 *.ipk *.apk 2>/dev/null > index.txt || true)
           done
 
-          echo "<h1>opkg-autoupgrade feed</h1><ul>" > feed/index.html
+          echo "<h1>autoupgrade feed</h1><ul>" > feed/index.html
           for dir in feed/*/; do
             version=$(basename "$dir")
             echo "<li><a href='${version}/'>${version}</a></li>" >> feed/index.html

@@ -2,8 +2,8 @@
 
 . /lib/functions.sh
 
-LOG_TAG="opkg-autoupgrade"
-LOG_FILE="/var/log/opkg-autoupgrade.log"
+LOG_TAG="autoupgrade"
+LOG_FILE="/var/log/autoupgrade.log"
 
 if command -v apk > /dev/null 2>&1; then
 	PKG_MGR="apk"
@@ -57,7 +57,7 @@ pkg_upgrade() {
 	fi
 }
 
-config_load "opkg-autoupgrade"
+config_load "autoupgrade"
 
 enabled=""
 retry_interval=""
@@ -71,15 +71,15 @@ fi
 
 log_msg "info" "Starting scheduled upgrade check (package manager: $PKG_MGR)"
 
-pkg_update > /tmp/opkg-autoupgrade-update.out 2>&1
+pkg_update > /tmp/autoupgrade-update.out 2>&1
 rc=$?
 
 if [ $rc -ne 0 ]; then
 	log_msg "err" "$PKG_MGR update failed (exit $rc)"
 	while IFS= read -r line; do
 		log_msg "err" "  $line"
-	done < /tmp/opkg-autoupgrade-update.out
-	rm -f /tmp/opkg-autoupgrade-update.out
+	done < /tmp/autoupgrade-update.out
+	rm -f /tmp/autoupgrade-update.out
 
 	if [ "$retry_interval" -gt 0 ] 2>/dev/null; then
 		log_msg "warning" "Will retry in $retry_interval minutes"
@@ -89,7 +89,7 @@ if [ $rc -ne 0 ]; then
 	exit 1
 fi
 
-rm -f /tmp/opkg-autoupgrade-update.out
+rm -f /tmp/autoupgrade-update.out
 log_msg "info" "Package lists updated successfully"
 
 upgrade_count=0
@@ -116,7 +116,7 @@ handle_package() {
 	pkg_get_versions "$avail"
 	log_msg "info" "$name: upgrading $old_ver -> $new_ver"
 
-	pkg_upgrade "$name" > /tmp/opkg-autoupgrade-pkg.out 2>&1
+	pkg_upgrade "$name" > /tmp/autoupgrade-pkg.out 2>&1
 	rc=$?
 
 	if [ $rc -eq 0 ]; then
@@ -126,11 +126,11 @@ handle_package() {
 		log_msg "err" "$name: upgrade failed (exit $rc)"
 		while IFS= read -r line; do
 			log_msg "err" "  $name: $line"
-		done < /tmp/opkg-autoupgrade-pkg.out
+		done < /tmp/autoupgrade-pkg.out
 		fail_count=$((fail_count + 1))
 	fi
 
-	rm -f /tmp/opkg-autoupgrade-pkg.out
+	rm -f /tmp/autoupgrade-pkg.out
 }
 
 config_foreach handle_package package

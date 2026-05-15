@@ -30,28 +30,28 @@ jobs:
 
       - name: Prepare feed structure
         run: |
-          mkdir -p feed/utils/opkg-autoupgrade
-          mkdir -p feed/applications/luci-app-opkg-autoupgrade
-          cp -r utils/opkg-autoupgrade/* feed/utils/opkg-autoupgrade/
-          cp -r applications/luci-app-opkg-autoupgrade/* feed/applications/luci-app-opkg-autoupgrade/
+          mkdir -p feed/utils/autoupgrade
+          mkdir -p feed/applications/luci-app-autoupgrade
+          cp -r utils/autoupgrade/* feed/utils/autoupgrade/
+          cp -r applications/luci-app-autoupgrade/* feed/applications/luci-app-autoupgrade/
 
-      - name: Build opkg-autoupgrade
+      - name: Build autoupgrade
         uses: openwrt/gh-action-sdk@v10
         env:
           ARCH: x86_64-${{ matrix.version }}
           FEEDNAME: autoupgrade
-          PACKAGES: opkg-autoupgrade
+          PACKAGES: autoupgrade
           FEED_DIR: ${{ github.workspace }}/feed
           NO_SHFMT_CHECK: 1
           NO_REFRESH_CHECK: 1
           V: s
 
-      - name: Build luci-app-opkg-autoupgrade
+      - name: Build luci-app-autoupgrade
         uses: openwrt/gh-action-sdk@v10
         env:
           ARCH: x86_64-${{ matrix.version }}
           FEEDNAME: autoupgrade
-          PACKAGES: luci-app-opkg-autoupgrade
+          PACKAGES: luci-app-autoupgrade
           FEED_DIR: ${{ github.workspace }}/feed
           NO_SHFMT_CHECK: 1
           NO_REFRESH_CHECK: 1

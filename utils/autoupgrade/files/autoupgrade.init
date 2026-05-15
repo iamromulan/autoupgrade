@@ -4,7 +4,7 @@ USE_PROCD=1
 START=99
 
 CRON_FILE="/etc/crontabs/root"
-UPGRADE_BIN="/usr/bin/opkg-autoupgrade"
+UPGRADE_BIN="/usr/bin/autoupgrade"
 
 remove_cron() {
 	[ -r "$CRON_FILE" ] || return
@@ -36,7 +36,7 @@ interval_to_cron() {
 update_cron() {
 	local enabled interval time hour minute cron_expr
 
-	config_load "opkg-autoupgrade"
+	config_load "autoupgrade"
 	config_get enabled settings enabled "0"
 	config_get interval settings interval "daily"
 	config_get time settings time "03:00"
@@ -71,5 +71,5 @@ reload_service() {
 }
 
 service_triggers() {
-	procd_add_reload_trigger "opkg-autoupgrade"
+	procd_add_reload_trigger "autoupgrade"
 }
