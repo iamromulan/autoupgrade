@@ -16,7 +16,8 @@ Unlike a full `opkg upgrade` or `apk upgrade` (which can break custom systems), 
 ## Features
 
 - **Selective upgrades** — only the packages you choose, not everything
-- **Scheduled** — daily, weekly, or monthly at a configurable time
+- **Scheduled** — daily, weekly (pick the day), or monthly (pick the day) at a configurable time
+- **Smart monthly scheduling** — if the configured day doesn't exist in a month (e.g. the 31st in April), runs on the last day instead, then re-arms correctly for the next month
 - **Dual package manager** — works with both opkg and apk (auto-detected at runtime)
 - **Full logging** — successes, warnings, and failures logged to syslog and `/var/log/autoupgrade.log`
 - **Retry on failure** — if feeds can't be reached (no internet), retries after a configurable interval
@@ -38,9 +39,11 @@ LuCI app requires the modern JS client-side rendering framework (19.07+).
 ```
 config autoupgrade 'settings'
 	option enabled '1'
-	option interval 'daily'
+	option interval 'weekly'
 	option time '03:00'
 	option retry_interval '30'
+	option day_of_week '0'
+	option day_of_month '1'
 
 config package
 	option name 'tailscale-tiny'
@@ -57,6 +60,8 @@ config package
 | `interval` | `daily`, `weekly`, `monthly` | `daily` | How often to check |
 | `time` | `HH:MM` | `03:00` | Time of day to run (24-hour) |
 | `retry_interval` | minutes | `30` | Retry delay if feed update fails (0 to disable) |
+| `day_of_week` | `0`–`6` | `0` | Day for weekly schedule (0=Sunday) |
+| `day_of_month` | `1`–`31` | `1` | Day for monthly schedule (clamped to month length) |
 
 ## Repository Structure
 
@@ -73,4 +78,5 @@ src-git autoupgrade https://github.com/iamromulan/autoupgrade.git
 
 ## License
 
-GPL-2.0
+- `autoupgrade` — GPL-2.0-only
+- `luci-app-autoupgrade` — Apache-2.0

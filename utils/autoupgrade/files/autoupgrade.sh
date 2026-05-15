@@ -136,3 +136,8 @@ handle_package() {
 config_foreach handle_package package
 
 log_msg "info" "Upgrade check complete: $upgrade_count upgraded, $skip_count up-to-date, $fail_count failed"
+
+config_get interval settings interval "daily"
+if [ "$interval" = "monthly" ]; then
+	AUTOUPGRADE_NEXT_MONTH=1 /etc/init.d/autoupgrade reload 2>/dev/null
+fi
