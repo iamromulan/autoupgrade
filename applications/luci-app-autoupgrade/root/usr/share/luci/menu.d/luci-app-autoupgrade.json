@@ -1,7 +1,7 @@
 {
 	"admin/system/autoupgrade": {
-		"title": "Auto Upgrade",
-		"order": 90,
+		"title": "Software Auto Upgrade",
+		"order": 31,
 		"action": {
 			"type": "view",
 			"path": "autoupgrade/overview"

@@ -47,7 +47,7 @@ function display() {
 				'class': 'btn cbi-button-negative',
 				'data-package': name,
 				'click': handleRemoveAuto
-			}, _('Remove'));
+			}, _('Disable'));
 
 			rows.push([name, autoPackages[name] || '', removeBtn]);
 		});
@@ -61,13 +61,13 @@ function display() {
 				btn = E('button', {
 					'class': 'btn cbi-button-neutral',
 					'disabled': 'disabled'
-				}, _('Added'));
+				}, _('Enabled'));
 			} else {
 				btn = E('button', {
 					'class': 'btn cbi-button-action',
 					'data-package': pkg.name,
 					'click': handleAddAuto
-				}, _('Autoupdate'));
+				}, _('Enable'));
 			}
 
 			rows.push([pkg.name, pkg.version, btn]);
@@ -136,8 +136,10 @@ function display() {
 
 	var settingsDiv = document.getElementById('autoupgrade-settings');
 	var logDiv = document.getElementById('autoupgrade-log');
+	var packagesDiv = document.getElementById('autoupgrade-packages-section');
 	if (settingsDiv) settingsDiv.style.display = currentMode === 'autoupdates' ? '' : 'none';
-	if (logDiv) logDiv.style.display = currentMode === 'autoupdates' ? '' : 'none';
+	if (packagesDiv) packagesDiv.style.display = currentMode !== 'log' ? '' : 'none';
+	if (logDiv) logDiv.style.display = currentMode === 'log' ? '' : 'none';
 }
 
 function handleAddAuto(ev) {
@@ -154,7 +156,6 @@ function handleAddAuto(ev) {
 	});
 
 	display();
-	uci.save().then(function() { uci.apply(); });
 }
 
 function handleRemoveAuto(ev) {
@@ -172,30 +173,6 @@ function handleRemoveAuto(ev) {
 
 	delete autoPackages[name];
 	display();
-	uci.save().then(function() { uci.apply(); });
-}
-
-function handleSettingSave() {
-	var enabled = document.getElementById('autoupgrade-enabled');
-	var interval = document.getElementById('autoupgrade-interval');
-	var time = document.getElementById('autoupgrade-time');
-	var retry = document.getElementById('autoupgrade-retry');
-
-	if (time && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(time.value)) {
-		ui.addNotification(null, E('p', _('Time must be in HH:MM format (24-hour).')), 'warning');
-		return;
-	}
-
-	uci.set('autoupgrade', 'settings', 'enabled', enabled.checked ? '1' : '0');
-	uci.set('autoupgrade', 'settings', 'interval', interval.value);
-	uci.set('autoupgrade', 'settings', 'time', time.value);
-	uci.set('autoupgrade', 'settings', 'retry_interval', retry.value);
-
-	uci.save().then(function() {
-		return uci.apply();
-	}).then(function() {
-		ui.addNotification(null, E('p', _('Settings saved.')), 'info');
-	});
 }
 
 function handleRunNow() {
@@ -268,7 +245,7 @@ return view.extend({
 		var retryInterval = uci.get('autoupgrade', 'settings', 'retry_interval') || '30';
 
 		var view = E('div', {}, [
-			E('h2', {}, _('Auto Upgrade')),
+			E('h2', {}, _('Software Auto Upgrade')),
 
 			E('ul', { 'class': 'cbi-tabmenu' }, [
 				E('li', {
@@ -280,7 +257,12 @@ return view.extend({
 					'data-mode': 'installed',
 					'class': 'cbi-tab-disabled',
 					'click': handleMode
-				}, E('a', { 'href': '#' }, _('Installed')))
+				}, E('a', { 'href': '#' }, _('Installed'))),
+				E('li', {
+					'data-mode': 'log',
+					'class': 'cbi-tab-disabled',
+					'click': handleMode
+				}, E('a', { 'href': '#' }, _('Log')))
 			]),
 
 			E('div', { 'id': 'autoupgrade-settings', 'class': 'cbi-section' }, [
@@ -333,11 +315,6 @@ return view.extend({
 					E('label', { 'class': 'cbi-value-title' }, ' '),
 					E('div', { 'class': 'cbi-value-field' }, [
 						E('button', {
-							'class': 'btn cbi-button-positive',
-							'click': handleSettingSave
-						}, _('Save Settings')),
-						' ',
-						E('button', {
 							'class': 'btn cbi-button-action',
 							'click': handleRunNow
 						}, _('Run Now'))
@@ -345,7 +322,7 @@ return view.extend({
 				])
 			]),
 
-			E('div', { 'class': 'cbi-section' }, [
+			E('div', { 'id': 'autoupgrade-packages-section', 'class': 'cbi-section' }, [
 				E('div', { 'style': 'margin-bottom: 8px' },
 					E('input', {
 						'type': 'text',
@@ -405,7 +382,30 @@ return view.extend({
 		return view;
 	},
 
-	handleSave: null,
-	handleSaveApply: null,
+	handleSave: function(ev) {
+		var time = document.getElementById('autoupgrade-time');
+		if (time && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(time.value)) {
+			ui.addNotification(null, E('p', _('Time must be in HH:MM format (24-hour).')), 'warning');
+			return Promise.reject();
+		}
+
+		var enabled = document.getElementById('autoupgrade-enabled');
+		var interval = document.getElementById('autoupgrade-interval');
+		var retry = document.getElementById('autoupgrade-retry');
+
+		uci.set('autoupgrade', 'settings', 'enabled', enabled.checked ? '1' : '0');
+		uci.set('autoupgrade', 'settings', 'interval', interval.value);
+		uci.set('autoupgrade', 'settings', 'time', time.value);
+		uci.set('autoupgrade', 'settings', 'retry_interval', retry.value);
+
+		return uci.save();
+	},
+
+	handleSaveApply: function(ev) {
+		return this.handleSave(ev).then(function() {
+			return uci.apply();
+		});
+	},
+
 	handleReset: null
 });
