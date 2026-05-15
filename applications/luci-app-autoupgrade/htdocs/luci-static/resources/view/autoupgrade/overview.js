@@ -34,6 +34,15 @@ function handleFilter(ev) {
 	display();
 }
 
+function updateDayVisibility() {
+	var interval = document.getElementById('autoupgrade-interval');
+	var weekDiv = document.getElementById('autoupgrade-weekday-row');
+	var monthDiv = document.getElementById('autoupgrade-monthday-row');
+	if (!interval) return;
+	if (weekDiv) weekDiv.style.display = interval.value === 'weekly' ? '' : 'none';
+	if (monthDiv) monthDiv.style.display = interval.value === 'monthly' ? '' : 'none';
+}
+
 function display() {
 	var rows = [];
 
@@ -243,6 +252,8 @@ return view.extend({
 		var interval = uci.get('autoupgrade', 'settings', 'interval') || 'daily';
 		var time = uci.get('autoupgrade', 'settings', 'time') || '03:00';
 		var retryInterval = uci.get('autoupgrade', 'settings', 'retry_interval') || '30';
+		var dayOfWeek = uci.get('autoupgrade', 'settings', 'day_of_week') || '0';
+		var dayOfMonth = uci.get('autoupgrade', 'settings', 'day_of_month') || '1';
 
 		var view = E('div', {}, [
 			E('h2', {}, _('Software Auto Upgrade')),
@@ -280,22 +291,48 @@ return view.extend({
 				E('div', { 'class': 'cbi-value' }, [
 					E('label', { 'class': 'cbi-value-title' }, _('Interval')),
 					E('div', { 'class': 'cbi-value-field' },
-						E('select', { 'id': 'autoupgrade-interval', 'class': 'cbi-input-select' }, [
+						E('select', { 'id': 'autoupgrade-interval', 'class': 'cbi-input-select', 'change': function() { updateDayVisibility(); } }, [
 							E('option', { 'value': 'daily', 'selected': interval === 'daily' ? 'selected' : null }, _('Daily')),
-							E('option', { 'value': 'weekly', 'selected': interval === 'weekly' ? 'selected' : null }, _('Weekly (Sunday)')),
-							E('option', { 'value': 'monthly', 'selected': interval === 'monthly' ? 'selected' : null }, _('Monthly (1st)'))
+							E('option', { 'value': 'weekly', 'selected': interval === 'weekly' ? 'selected' : null }, _('Weekly')),
+							E('option', { 'value': 'monthly', 'selected': interval === 'monthly' ? 'selected' : null }, _('Monthly'))
 						])
 					)
 				]),
+				E('div', { 'id': 'autoupgrade-weekday-row', 'class': 'cbi-value', 'style': interval === 'weekly' ? '' : 'display:none' }, [
+					E('label', { 'class': 'cbi-value-title' }, _('Day of week')),
+					E('div', { 'class': 'cbi-value-field' },
+						E('select', { 'id': 'autoupgrade-dayofweek', 'class': 'cbi-input-select' }, [
+							E('option', { 'value': '0', 'selected': dayOfWeek === '0' ? 'selected' : null }, _('Sunday')),
+							E('option', { 'value': '1', 'selected': dayOfWeek === '1' ? 'selected' : null }, _('Monday')),
+							E('option', { 'value': '2', 'selected': dayOfWeek === '2' ? 'selected' : null }, _('Tuesday')),
+							E('option', { 'value': '3', 'selected': dayOfWeek === '3' ? 'selected' : null }, _('Wednesday')),
+							E('option', { 'value': '4', 'selected': dayOfWeek === '4' ? 'selected' : null }, _('Thursday')),
+							E('option', { 'value': '5', 'selected': dayOfWeek === '5' ? 'selected' : null }, _('Friday')),
+							E('option', { 'value': '6', 'selected': dayOfWeek === '6' ? 'selected' : null }, _('Saturday'))
+						])
+					)
+				]),
+				E('div', { 'id': 'autoupgrade-monthday-row', 'class': 'cbi-value', 'style': interval === 'monthly' ? '' : 'display:none' }, [
+					E('label', { 'class': 'cbi-value-title' }, _('Day of month')),
+					E('div', { 'class': 'cbi-value-field' },
+						E('input', {
+							'id': 'autoupgrade-dayofmonth',
+							'type': 'text',
+							'class': 'cbi-input-text',
+							'value': dayOfMonth,
+							'placeholder': '1'
+						})
+					)
+				]),
 				E('div', { 'class': 'cbi-value' }, [
-					E('label', { 'class': 'cbi-value-title' }, _('Time')),
+					E('label', { 'class': 'cbi-value-title' }, _('Time (24hr)')),
 					E('div', { 'class': 'cbi-value-field' },
 						E('input', {
 							'id': 'autoupgrade-time',
 							'type': 'text',
 							'class': 'cbi-input-text',
 							'value': time,
-							'placeholder': '03:00'
+							'placeholder': 'HH:MM'
 						})
 					)
 				]),
@@ -377,7 +414,7 @@ return view.extend({
 			])
 		]);
 
-		window.setTimeout(display, 0);
+		window.setTimeout(function() { display(); updateDayVisibility(); }, 0);
 
 		return view;
 	},
@@ -397,6 +434,20 @@ return view.extend({
 		uci.set('autoupgrade', 'settings', 'interval', interval.value);
 		uci.set('autoupgrade', 'settings', 'time', time.value);
 		uci.set('autoupgrade', 'settings', 'retry_interval', retry.value);
+
+		var dayOfWeekEl = document.getElementById('autoupgrade-dayofweek');
+		var dayOfMonthEl = document.getElementById('autoupgrade-dayofmonth');
+
+		if (interval.value === 'monthly' && dayOfMonthEl) {
+			var dom = parseInt(dayOfMonthEl.value, 10);
+			if (isNaN(dom) || dom < 1 || dom > 31) {
+				ui.addNotification(null, E('p', _('Day of month must be between 1 and 31.')), 'warning');
+				return Promise.reject();
+			}
+		}
+
+		if (dayOfWeekEl) uci.set('autoupgrade', 'settings', 'day_of_week', dayOfWeekEl.value);
+		if (dayOfMonthEl) uci.set('autoupgrade', 'settings', 'day_of_month', dayOfMonthEl.value);
 
 		return uci.save();
 	},
