@@ -33,23 +33,12 @@ jobs:
           cp -r utils/autoupgrade/* feed/utils/autoupgrade/
           cp -r applications/luci-app-autoupgrade/* feed/applications/luci-app-autoupgrade/
 
-      - name: Build autoupgrade
+      - name: Build packages
         uses: openwrt/gh-action-sdk@v10
         env:
           ARCH: x86_64-${{ matrix.version }}
           FEEDNAME: autoupgrade
-          PACKAGES: autoupgrade
-          FEED_DIR: ${{ github.workspace }}/feed
-          NO_SHFMT_CHECK: 1
-          NO_REFRESH_CHECK: 1
-          V: s
-
-      - name: Build luci-app-autoupgrade
-        uses: openwrt/gh-action-sdk@v10
-        env:
-          ARCH: x86_64-${{ matrix.version }}
-          FEEDNAME: autoupgrade
-          PACKAGES: luci-app-autoupgrade
+          PACKAGES: autoupgrade luci-app-autoupgrade
           FEED_DIR: ${{ github.workspace }}/feed
           NO_SHFMT_CHECK: 1
           NO_REFRESH_CHECK: 1
