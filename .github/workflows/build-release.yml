@@ -47,8 +47,7 @@ jobs:
       - name: Collect artifacts
         run: |
           mkdir -p output/${{ matrix.version }}
-          find bin/ -name '*.ipk' -exec cp {} output/${{ matrix.version }}/ \; 2>/dev/null || true
-          find bin/ -name '*.apk' -exec cp {} output/${{ matrix.version }}/ \; 2>/dev/null || true
+          find bin/ \( -name 'autoupgrade*.ipk' -o -name 'luci-app-autoupgrade*.ipk' -o -name 'autoupgrade*.apk' -o -name 'luci-app-autoupgrade*.apk' \) -exec cp {} output/${{ matrix.version }}/ \; 2>/dev/null || true
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
