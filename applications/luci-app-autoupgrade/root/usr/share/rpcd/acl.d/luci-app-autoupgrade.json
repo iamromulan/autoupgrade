@@ -12,7 +12,8 @@
 			"uci": ["autoupgrade"],
 			"file": {
 				"/usr/bin/autoupgrade-clearlog": ["exec"],
-				"/usr/bin/autoupgrade": ["exec"]
+				"/usr/bin/autoupgrade": ["exec"],
+				"/etc/init.d/autoupgrade": ["exec"]
 			}
 		}
 	}

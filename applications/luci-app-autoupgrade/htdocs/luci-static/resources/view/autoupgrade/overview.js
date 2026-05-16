@@ -453,8 +453,22 @@ return view.extend({
 	},
 
 	handleSaveApply: function(ev) {
+		var enabled = document.getElementById('autoupgrade-enabled');
+		var isEnabled = enabled && enabled.checked;
 		return this.handleSave(ev).then(function() {
 			return uci.apply();
+		}).then(function() {
+			if (isEnabled) {
+				return fs.exec('/etc/init.d/autoupgrade', ['enable']).then(function() {
+					return fs.exec('/etc/init.d/autoupgrade', ['start']);
+				});
+			} else {
+				return fs.exec('/etc/init.d/autoupgrade', ['stop']).then(function() {
+					return fs.exec('/etc/init.d/autoupgrade', ['disable']);
+				});
+			}
+		}).then(function() {
+			ui.changes.setIndicator(0);
 		});
 	},
 
