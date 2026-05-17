@@ -112,17 +112,46 @@ Disable and stop:
 /etc/init.d/autoupgrade disable
 ```
 
-## Repository Structure
+## Install from Feed
+
+Pre-built packages are hosted via GitHub Pages. No need to compile from source.
+
+### opkg (OpenWrt 19.07 – 24.10)
+
+```sh
+# Add the feed
+echo "src/gz autoupgrade https://iamromulan.github.io/autoupgrade/24.10" >> /etc/opkg/customfeeds.conf
+
+# Trust the signing key
+wget -O /tmp/autoupgrade.pub https://iamromulan.github.io/autoupgrade/24.10/pubkey
+opkg-key add /tmp/autoupgrade.pub
+
+# Install
+opkg update
+opkg install autoupgrade luci-app-autoupgrade
+```
+
+### apk (OpenWrt 25.x+)
+
+```sh
+echo "https://iamromulan.github.io/autoupgrade/25.12" >> /etc/apk/repositories.d/autoupgrade.list
+apk update
+apk add autoupgrade luci-app-autoupgrade
+```
+
+## Build from Source
+
+This repo is a standalone OpenWrt package feed. Add it to your build system:
+
+```
+src-git autoupgrade https://github.com/iamromulan/autoupgrade.git
+```
+
+### Repository Structure
 
 ```
 utils/autoupgrade/                    # Base package
 applications/luci-app-autoupgrade/    # LuCI app
-```
-
-This repo works as a standalone OpenWrt package feed. Add it to your build system:
-
-```
-src-git autoupgrade https://github.com/iamromulan/autoupgrade.git
 ```
 
 ## License
