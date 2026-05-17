@@ -63,6 +63,55 @@ config package
 | `day_of_week` | `0`–`6` | `0` | Day for weekly schedule (0=Sunday) |
 | `day_of_month` | `1`–`31` | `1` | Day for monthly schedule (clamped to month length) |
 
+## CLI Usage
+
+Enable and start the service:
+
+```sh
+uci set autoupgrade.settings.enabled='1'
+uci set autoupgrade.settings.interval='weekly'
+uci set autoupgrade.settings.day_of_week='3'    # Wednesday
+uci set autoupgrade.settings.time='03:00'
+uci commit autoupgrade
+
+/etc/init.d/autoupgrade enable
+/etc/init.d/autoupgrade start
+```
+
+Add packages to upgrade:
+
+```sh
+uci add autoupgrade package
+uci set autoupgrade.@package[-1].name='tailscale-tiny'
+uci commit autoupgrade
+/etc/init.d/autoupgrade reload
+```
+
+Run an upgrade immediately:
+
+```sh
+/usr/bin/autoupgrade
+```
+
+View the log:
+
+```sh
+cat /var/log/autoupgrade.log
+```
+
+Clear the log:
+
+```sh
+/usr/bin/autoupgrade-clearlog
+```
+
+Disable and stop:
+
+```sh
+/etc/init.d/autoupgrade stop
+/etc/init.d/autoupgrade disable
+```
+
 ## Repository Structure
 
 ```
