@@ -1,12 +1,18 @@
-name: Build and Release
+name: Build, Release & Deploy Feed
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 on:
   push:
     tags:
       - 'v*'
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -40,19 +46,26 @@ jobs:
           FEEDNAME: autoupgrade
           PACKAGES: autoupgrade luci-app-autoupgrade
           FEED_DIR: ${{ github.workspace }}/feed
+          INDEX: 1
+          KEY_BUILD: ${{ secrets.USIGN_PRIVATE_KEY }}
           NO_SHFMT_CHECK: 1
           NO_REFRESH_CHECK: 1
           V: s
 
-      - name: Collect artifacts
+      - name: Collect feed
         run: |
           mkdir -p output/${{ matrix.version }}
-          find bin/ \( -name 'autoupgrade*.ipk' -o -name 'luci-app-autoupgrade*.ipk' -o -name 'autoupgrade*.apk' -o -name 'luci-app-autoupgrade*.apk' \) -exec cp {} output/${{ matrix.version }}/ \; 2>/dev/null || true
+          FEED_DIR=$(find bin/packages/ -type d -name 'autoupgrade' | head -1)
+          if [ -n "$FEED_DIR" ]; then
+            cp "$FEED_DIR"/* output/${{ matrix.version }}/ 2>/dev/null || true
+          fi
+          echo "=== Feed contents for ${{ matrix.version }} ==="
+          ls -la output/${{ matrix.version }}/
 
-      - name: Upload artifacts
+      - name: Upload feed artifact
         uses: actions/upload-artifact@v4
         with:
-          name: packages-${{ matrix.version }}
+          name: feed-${{ matrix.version }}
           path: output/${{ matrix.version }}/
 
   release:
@@ -62,8 +75,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: ./artifacts
 
@@ -76,3 +88,73 @@ jobs:
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-feed:
+    name: Deploy Feed to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Build feed site
+        run: |
+          mkdir -p site/24.10 site/25.12
+
+          cp artifacts/feed-openwrt-24.10/* site/24.10/ 2>/dev/null || true
+          cp artifacts/feed-openwrt-25.12/* site/25.12/ 2>/dev/null || true
+
+          cat > site/index.html <<'HTML'
+          <!DOCTYPE html>
+          <html><head><title>autoupgrade feed</title></head><body>
+          <h1>autoupgrade — OpenWrt Package Feed</h1>
+          <h2>Install</h2>
+          <h3>opkg (24.10 and earlier)</h3>
+          <pre>
+          # Add feed
+          echo "src/gz autoupgrade https://iamromulan.github.io/autoupgrade/24.10" >> /etc/opkg/customfeeds.conf
+
+          # Trust the signing key
+          wget -O /tmp/autoupgrade.pub https://iamromulan.github.io/autoupgrade/24.10/pubkey
+          opkg-key add /tmp/autoupgrade.pub
+
+          # Install
+          opkg update
+          opkg install autoupgrade luci-app-autoupgrade
+          </pre>
+          <h3>apk (25.12+)</h3>
+          <pre>
+          echo "https://iamromulan.github.io/autoupgrade/25.12" >> /etc/apk/repositories.d/autoupgrade.list
+          apk update
+          apk add autoupgrade luci-app-autoupgrade
+          </pre>
+          <h2>Directories</h2>
+          <ul>
+            <li><a href="24.10/">24.10 (ipk)</a></li>
+            <li><a href="25.12/">25.12 (apk)</a></li>
+          </ul>
+          </body></html>
+          HTML
+
+          # Embed public key in the ipk feed dir for opkg-key add
+          cat > site/24.10/pubkey <<'KEY'
+          untrusted comment: iamromulan-SDXPINN-repo
+          RWRiYmmPA40SJuEKQND0oYaMLANvANo+5dJCAlGvndAi5aHQP3KPZ9aE
+          KEY
+
+          echo "=== Final site structure ==="
+          find site/ -type f | sort
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
