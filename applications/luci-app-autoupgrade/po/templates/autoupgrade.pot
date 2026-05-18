@@ -1,0 +1,140 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "Auto Updates"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Clear the upgrade log?"
+msgstr ""
+
+msgid "Daily"
+msgstr ""
+
+msgid "Day of month"
+msgstr ""
+
+msgid "Day of month must be between 1 and 31."
+msgstr ""
+
+msgid "Day of week"
+msgstr ""
+
+msgid "Disable"
+msgstr ""
+
+msgid "Displaying %d-%d of %d"
+msgstr ""
+
+msgid "Enable"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Error: "
+msgstr ""
+
+msgid "Friday"
+msgstr ""
+
+msgid "Installed"
+msgstr ""
+
+msgid "Interval"
+msgstr ""
+
+msgid "Log"
+msgstr ""
+
+msgid "Monday"
+msgstr ""
+
+msgid "Monthly"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "No log entries."
+msgstr ""
+
+msgid "No packages configured for auto-update."
+msgstr ""
+
+msgid "No packages found."
+msgstr ""
+
+msgid "Package name"
+msgstr ""
+
+msgid "Previous"
+msgstr ""
+
+msgid "Refresh"
+msgstr ""
+
+msgid "Retry interval (minutes)"
+msgstr ""
+
+msgid "Run an upgrade check now for all configured packages?"
+msgstr ""
+
+msgid "Run Now"
+msgstr ""
+
+msgid "Run Upgrade Check"
+msgstr ""
+
+msgid "Running..."
+msgstr ""
+
+msgid "Running upgrade check, please wait..."
+msgstr ""
+
+msgid "Saturday"
+msgstr ""
+
+msgid "Schedule"
+msgstr ""
+
+msgid "Software Auto Upgrade"
+msgstr ""
+
+msgid "Sunday"
+msgstr ""
+
+msgid "Thursday"
+msgstr ""
+
+msgid "Time (24hr)"
+msgstr ""
+
+msgid "Time must be in HH:MM format (24-hour)."
+msgstr ""
+
+msgid "Tuesday"
+msgstr ""
+
+msgid "Type to filter…"
+msgstr ""
+
+msgid "Upgrade check complete. See log below."
+msgstr ""
+
+msgid "Upgrade Log"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Wednesday"
+msgstr ""
+
+msgid "Weekly"
+msgstr ""
