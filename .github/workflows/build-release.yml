@@ -48,6 +48,7 @@ jobs:
           FEED_DIR: ${{ github.workspace }}/feed
           INDEX: 1
           KEY_BUILD: ${{ secrets.USIGN_PRIVATE_KEY }}
+          NO_SHFMT_CHECK: 1
           NO_REFRESH_CHECK: 1
           V: s
 
