@@ -4,6 +4,7 @@ PKG_NAME:=autoupgrade
 PKG_VERSION:=0.5.0
 PKG_RELEASE:=1
 PKG_LICENSE:=GPL-2.0-only
+PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Cameron Thompson <cameronst2@gmail.com>
 
 include $(INCLUDE_DIR)/package.mk
