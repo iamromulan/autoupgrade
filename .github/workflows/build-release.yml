@@ -38,6 +38,7 @@ jobs:
           mkdir -p feed/applications/luci-app-autoupgrade
           cp -r utils/autoupgrade/* feed/utils/autoupgrade/
           cp -r applications/luci-app-autoupgrade/* feed/applications/luci-app-autoupgrade/
+          wget -q "https://raw.githubusercontent.com/openwrt/luci/master/luci.mk" -O feed/luci.mk
 
       - name: Build packages
         uses: openwrt/gh-action-sdk@v10
