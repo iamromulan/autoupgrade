@@ -1,6 +1,6 @@
 # autoupgrade
 
-> **Work in progress** — not yet ready for production use.
+> **Beta** — tested on OpenWrt 22.03 and 23.05 (opkg). Looking for testers on additional versions, especially 25.x (apk). Please report issues.
 
 Selective automatic package upgrades for OpenWrt. Choose which packages stay updated, on your schedule.
 
