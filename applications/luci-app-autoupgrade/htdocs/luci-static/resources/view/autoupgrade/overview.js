@@ -196,7 +196,7 @@ function handleRunNow() {
 					ui.showModal(_('Running...'), [
 						E('p', { 'class': 'spinning' }, _('Running upgrade check, please wait...'))
 					]);
-					fs.exec('/usr/bin/autoupgrade').then(function(res) {
+					fs.exec('/usr/bin/autoupgrade').then(function() {
 						ui.hideModal();
 						return fs.read('/var/log/autoupgrade.log').catch(function() { return ''; });
 					}).then(function(log) {
@@ -419,7 +419,7 @@ return view.extend({
 		return view;
 	},
 
-	handleSave: function(ev) {
+	handleSave: function() {
 		var time = document.getElementById('autoupgrade-time');
 		if (time && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(time.value)) {
 			ui.addNotification(null, E('p', _('Time must be in HH:MM format (24-hour).')), 'warning');
