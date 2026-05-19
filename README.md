@@ -6,13 +6,6 @@ Selective automatic package upgrades for OpenWrt. Choose which packages stay upd
 
 Unlike a full `opkg upgrade` or `apk upgrade` (which can break custom systems), this only upgrades the specific packages you configure. Each package is upgraded individually with full logging.
 
-## Packages
-
-| Package | Description |
-|---------|-------------|
-| `autoupgrade` | UCI config, procd init, upgrade script, cron scheduling |
-| `luci-app-autoupgrade` | LuCI web interface for managing auto-upgrades |
-
 ## Features
 
 - **Selective upgrades** — only the packages you choose, not everything
@@ -25,6 +18,20 @@ Unlike a full `opkg upgrade` or `apk upgrade` (which can break custom systems), 
 - **UCI config** — all settings in `/etc/config/autoupgrade`, manageable via CLI or LuCI
 - **Cron-based scheduling** — zero resource usage between runs; procd reload trigger keeps cron in sync with UCI
 
+## Screenshots
+
+Schedule and package list:
+
+![Auto Updates tab with packages configured](screenshots/configured.png)
+
+Browse installed packages and enable them for auto-upgrade:
+
+![Installed packages tab with Enable buttons](screenshots/installed-tab.png)
+
+Upgrade log with results:
+
+![Log tab showing upgrade results](screenshots/log.png)
+
 ## Compatibility
 
 | OpenWrt version | Package manager | Status |
@@ -33,6 +40,33 @@ Unlike a full `opkg upgrade` or `apk upgrade` (which can break custom systems), 
 | 25.x+           | apk             | Supported |
 
 LuCI app requires the modern JS client-side rendering framework (19.07+).
+
+## Install from Feed
+
+Pre-built packages are hosted via GitHub Pages. No need to compile from source.
+
+### opkg (OpenWrt 19.07 – 24.10)
+
+```sh
+# Add the feed
+echo "src/gz autoupgrade https://iamromulan.github.io/autoupgrade/24.10" >> /etc/opkg/customfeeds.conf
+
+# Trust the signing key
+wget -O /tmp/autoupgrade.pub https://iamromulan.github.io/autoupgrade/24.10/pubkey
+opkg-key add /tmp/autoupgrade.pub
+
+# Install
+opkg update
+opkg install autoupgrade luci-app-autoupgrade
+```
+
+### apk (OpenWrt 25.x+)
+
+```sh
+echo "https://iamromulan.github.io/autoupgrade/25.12" >> /etc/apk/repositories.d/autoupgrade.list
+apk update
+apk add autoupgrade luci-app-autoupgrade
+```
 
 ## UCI Configuration
 
@@ -110,33 +144,6 @@ Disable and stop:
 ```sh
 /etc/init.d/autoupgrade stop
 /etc/init.d/autoupgrade disable
-```
-
-## Install from Feed
-
-Pre-built packages are hosted via GitHub Pages. No need to compile from source.
-
-### opkg (OpenWrt 19.07 – 24.10)
-
-```sh
-# Add the feed
-echo "src/gz autoupgrade https://iamromulan.github.io/autoupgrade/24.10" >> /etc/opkg/customfeeds.conf
-
-# Trust the signing key
-wget -O /tmp/autoupgrade.pub https://iamromulan.github.io/autoupgrade/24.10/pubkey
-opkg-key add /tmp/autoupgrade.pub
-
-# Install
-opkg update
-opkg install autoupgrade luci-app-autoupgrade
-```
-
-### apk (OpenWrt 25.x+)
-
-```sh
-echo "https://iamromulan.github.io/autoupgrade/25.12" >> /etc/apk/repositories.d/autoupgrade.list
-apk update
-apk add autoupgrade luci-app-autoupgrade
 ```
 
 ## Build from Source
